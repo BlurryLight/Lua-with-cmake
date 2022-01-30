@@ -1,9 +1,44 @@
-cmake_minimum_required(VERSION 3.1)
-project(lua LANGUAGES C VERSION 5.4.4)
+cmake_minimum_required(VERSION 3.11)
+# default version is 5.3.6 
+# redefine it use cmake -DLUA_VERSION=5.3.5 ....
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+if(DEFINED ENV{LUA_VERSION})
+    set(LUA_VERSION $ENV{LUA_VERSION}) 
+else()
+    set(LUA_VERSION 5.3.6) 
+endif()
+message("Lua Version is " ${LUA_VERSION})
+
+# download lua
+set(temp_dir ${CMAKE_SOURCE_DIR}/lua-${LUA_VERSION})
+if(NOT EXISTS lua-${LUA_VERSION})
+    set(filename lua-${LUA_VERSION}.tar.gz)
+    set(lua_tgz_path ${CMAKE_SOURCE_DIR}/orig_sources/${filename})
+    if(NOT EXISTS ${lua_tgz_path})
+        file(DOWNLOAD
+            https://www.lua.org/ftp/${filename}
+            ${lua_tgz_path})
+    endif()
+
+    if(EXISTS ${temp_dir})
+        file(REMOVE_RECURSE ${temp_dir})
+    endif()
+    file(MAKE_DIRECTORY ${temp_dir})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${lua_tgz_path} 
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    # file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt.subdirectory
+    #     DESTINATION ${temp_dir}/CMakeLists.txt)
+endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt.subdirectory ${temp_dir}/CMakeLists.txt COPYONLY)
+
+project(lua LANGUAGES C VERSION ${LUA_VERSION})
 
 option(LUA_SUPPORT_DL "Support dynamic loading of compiled modules" OFF)
 option(LUA_BUILD_AS_CXX "Build lua as C++" OFF)
-enable_language(CXX)
+# option(LUA_BUILD_DYNAMIC "Build Lib as dynamic lib" ON)
+# enable_language(CXX)
 
 if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
     set(TOP_LEVEL TRUE)
@@ -20,4 +55,35 @@ else()
 endif()
 
 
-add_subdirectory(lua-5.4.4)
+add_subdirectory(lua-${LUA_VERSION})
+# https://blog.xizhibei.me/2020/04/20/cmake-5-install-package-and-export/
+# install dir
+set(install_dir ${CMAKE_SOURCE_DIR}/lua-${LUA_VERSION}-build-${CMAKE_BUILD_TYPE})
+if(NOT EXISTS ${install_dir})
+    file(MAKE_DIRECTORY ${install_dir})
+endif()
+set(CMAKE_INSTALL_PREFIX ${install_dir}) # default install dir is current_dir/lua-version-build
+
+
+set(Lua-headers
+    lua-${LUA_VERSION}/src/lua.h
+    lua-${LUA_VERSION}/src/lua.hpp
+    lua-${LUA_VERSION}/src/luaconf.h
+    lua-${LUA_VERSION}/src/lauxlib.h
+    lua-${LUA_VERSION}/src/lualib.h
+ )
+install(FILES ${Lua-headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+install(DIRECTORY lua-${LUA_VERSION}/doc  DESTINATION ${CMAKE_INSTALL_PREFIX}/doc)
+
+install(TARGETS lua_static lua_dynamic luac
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
+
+if(LUA_BUILD_BINARY)
+install(TARGETS lua
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+endif()

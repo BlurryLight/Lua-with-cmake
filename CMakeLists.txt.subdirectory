@@ -1,45 +1,30 @@
-set(LUA_LIB_SRCS 
-    "src/lapi.c"
-    "src/lcode.c"
-    "src/lctype.c"
-    "src/ldebug.c"
-    "src/ldo.c"
-    "src/ldump.c"
-    "src/lfunc.c"
-    "src/lgc.c"
-    "src/llex.c"
-    "src/lmem.c"
-    "src/lobject.c"
-    "src/lopcodes.c"
-    "src/lparser.c"
-    "src/lstate.c"
-    "src/lstring.c"
-    "src/ltable.c"
-    "src/ltm.c"
-    "src/lundump.c"
-    "src/lvm.c"
-    "src/lzio.c"
-    "src/lauxlib.c"
-    "src/lbaselib.c"
-    "src/lcorolib.c"
-    "src/ldblib.c"
-    "src/liolib.c"
-    "src/lmathlib.c"
-    "src/loadlib.c"
-    "src/loslib.c"
-    "src/lstrlib.c"
-    "src/ltablib.c"
-    "src/lutf8lib.c"
-    "src/linit.c"
+file(GLOB LUA_LIB_SRCS "src/*.c")
+list(REMOVE_ITEM LUA_LIB_SRCS 
+    ${temp_dir}/src/lua.c 
+    ${temp_dir}/src/luac.c 
 )
+message(${LUA_LIB_SRCS})
+
 
 if(LUA_BUILD_AS_CXX)
 	set_source_files_properties(${LUA_LIB_SRCS} "src/lua.c" "src/luac.c" PROPERTIES LANGUAGE CXX )
 endif()
 
-add_library(lua_static STATIC ${LUA_LIB_SRCS})
-set_target_properties(lua_static PROPERTIES OUTPUT_NAME "lua")
+add_library(lua_objects OBJECT ${LUA_LIB_SRCS})
+set_property(TARGET lua_objects PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+add_library(lua_static STATIC $<TARGET_OBJECTS:lua_objects>)
+add_library(lua_dynamic SHARED $<TARGET_OBJECTS:lua_objects>)
+
+set_target_properties(lua_static PROPERTIES OUTPUT_NAME "luas")
 target_include_directories(lua_static PUBLIC "include")
+
+set_target_properties(lua_dynamic PROPERTIES OUTPUT_NAME "luad")
+target_include_directories(lua_dynamic PUBLIC "include")
+target_compile_definitions ( lua_dynamic PRIVATE LUA_BUILD_AS_DLL )
+if(MSVC)
+    target_compile_definitions ( lua_dynamic PRIVATE _CRT_SECURE_NO_WARNINGS )
+endif(MSVC)
 if(UNIX)
 	set(LUA_DEFINITIONS)
     
@@ -50,11 +35,14 @@ if(UNIX)
             message(FATAL_ERROR "libm not found and is required by lua")
         endif()
         target_link_libraries(lua_static INTERFACE ${LIBM})
+        target_link_libraries(lua_dynamic INTERFACE ${LIBM})
 
         list(APPEND LUA_DEFINITIONS LUA_USE_POSIX)
         if(LUA_SUPPORT_DL)
             target_compile_definitions(lua_static PRIVATE "LUA_USE_DLOPEN")
             target_link_libraries(lua_static INTERFACE dl)
+            target_compile_definitions(lua_dynamic PRIVATE "LUA_USE_DLOPEN")
+            target_link_libraries(lua_dynamic INTERFACE dl)
         endif()
     endif()
 
@@ -62,6 +50,12 @@ if(UNIX)
 		PUBLIC ${LUA_DEFINITIONS}
 	)
 	target_compile_options(lua_static
+		PRIVATE "-Wall" "-Wextra"
+	)
+	target_compile_definitions(lua_dynamic 
+		PUBLIC ${LUA_DEFINITIONS}
+	)
+	target_compile_options(lua_dynamic
 		PRIVATE "-Wall" "-Wextra"
 	)
 endif()
@@ -72,7 +66,7 @@ if(LUA_BUILD_BINARY)
 
 
     add_executable(lua "src/lua.c")
-    target_link_libraries(lua PUBLIC lua_static)
+    target_link_libraries(lua PUBLIC lua_dynamic)
     set_target_properties(lua PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
     )
@@ -81,6 +75,8 @@ if(LUA_BUILD_BINARY)
         target_link_libraries(lua PUBLIC readline)
     endif()
 endif()
+# https://stackoverflow.com/questions/33952101/error-while-building-luac-executable-in-rhel6-6
+# luac must staticlly link liblua.c
 if(LUA_BUILD_COMPILER)
     add_executable(luac "src/luac.c")
     target_link_libraries(luac PUBLIC lua_static)
