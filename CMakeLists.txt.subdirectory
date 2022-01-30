@@ -3,7 +3,7 @@ list(REMOVE_ITEM LUA_LIB_SRCS
     ${temp_dir}/src/lua.c 
     ${temp_dir}/src/luac.c 
 )
-message(${LUA_LIB_SRCS})
+# message(${LUA_LIB_SRCS})
 
 
 if(LUA_BUILD_AS_CXX)
@@ -16,10 +16,11 @@ set_property(TARGET lua_objects PROPERTY POSITION_INDEPENDENT_CODE 1)
 add_library(lua_static STATIC $<TARGET_OBJECTS:lua_objects>)
 add_library(lua_dynamic SHARED $<TARGET_OBJECTS:lua_objects>)
 
-set_target_properties(lua_static PROPERTIES OUTPUT_NAME "luas")
+set(name lua${LUA_VERSION_MAJOR}${LUA_VERSION_MINOR})
+set_target_properties(lua_static PROPERTIES OUTPUT_NAME ${name}s)
 target_include_directories(lua_static PUBLIC "include")
 
-set_target_properties(lua_dynamic PROPERTIES OUTPUT_NAME "luad")
+set_target_properties(lua_dynamic PROPERTIES OUTPUT_NAME ${name})
 target_include_directories(lua_dynamic PUBLIC "include")
 target_compile_definitions ( lua_dynamic PRIVATE LUA_BUILD_AS_DLL )
 if(MSVC)
@@ -66,7 +67,7 @@ if(LUA_BUILD_BINARY)
 
 
     add_executable(lua "src/lua.c")
-    target_link_libraries(lua PUBLIC lua_dynamic)
+    target_link_libraries(lua PUBLIC lua_static)
     set_target_properties(lua PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
     )

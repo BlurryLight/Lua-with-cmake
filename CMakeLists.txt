@@ -10,6 +10,12 @@ else()
 endif()
 message("Lua Version is " ${LUA_VERSION})
 
+# cmake中用;分割的字符串是列表
+string(REPLACE "." ";" LUA_VERSION_LIST ${LUA_VERSION})
+list(GET LUA_VERSION_LIST 0 LUA_VERSION_MAJOR)
+list(GET LUA_VERSION_LIST 1 LUA_VERSION_MINOR)
+list(GET LUA_VERSION_LIST 2 LUA_VERSION_PATCH)
+
 # download lua
 set(temp_dir ${CMAKE_SOURCE_DIR}/lua-${LUA_VERSION})
 if(NOT EXISTS lua-${LUA_VERSION})
@@ -58,10 +64,7 @@ endif()
 add_subdirectory(lua-${LUA_VERSION})
 # https://blog.xizhibei.me/2020/04/20/cmake-5-install-package-and-export/
 # install dir
-set(install_dir ${CMAKE_SOURCE_DIR}/lua-${LUA_VERSION}-build-${CMAKE_BUILD_TYPE})
-if(NOT EXISTS ${install_dir})
-    file(MAKE_DIRECTORY ${install_dir})
-endif()
+set(install_dir ${CMAKE_SOURCE_DIR}/${CMAKE_C_COMPILER_ID}—lua-${LUA_VERSION}-build-${CMAKE_BUILD_TYPE})
 set(CMAKE_INSTALL_PREFIX ${install_dir}) # default install dir is current_dir/lua-version-build
 
 
