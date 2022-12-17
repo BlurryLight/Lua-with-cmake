@@ -18,9 +18,11 @@ add_library(lua_dynamic SHARED $<TARGET_OBJECTS:lua_objects>)
 
 set(name lua${LUA_VERSION_MAJOR}${LUA_VERSION_MINOR})
 set_target_properties(lua_static PROPERTIES OUTPUT_NAME ${name}s)
+set_target_properties(lua_static PROPERTIES DEBUG_POSTFIX "_d")
 target_include_directories(lua_static PUBLIC "include")
 
 set_target_properties(lua_dynamic PROPERTIES OUTPUT_NAME ${name})
+set_target_properties(lua_dynamic PROPERTIES DEBUG_POSTFIX "_d")
 target_include_directories(lua_dynamic PUBLIC "include")
 target_compile_definitions ( lua_dynamic PRIVATE LUA_BUILD_AS_DLL )
 if(MSVC)
