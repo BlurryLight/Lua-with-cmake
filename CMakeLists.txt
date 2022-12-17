@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 # default version is 5.3.6 
 # redefine it use cmake -DLUA_VERSION=5.3.5 ....
-set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 if(DEFINED ENV{LUA_VERSION})
     set(LUA_VERSION $ENV{LUA_VERSION}) 
@@ -20,7 +20,7 @@ list(GET LUA_VERSION_LIST 2 LUA_VERSION_PATCH)
 set(temp_dir ${CMAKE_SOURCE_DIR}/lua-${LUA_VERSION})
 if(NOT EXISTS lua-${LUA_VERSION})
     set(filename lua-${LUA_VERSION}.tar.gz)
-    set(lua_tgz_path ${CMAKE_SOURCE_DIR}/orig_sources/${filename})
+    set(lua_tgz_path ${CMAKE_SOURCE_DIR}/${filename})
     if(NOT EXISTS ${lua_tgz_path})
         file(DOWNLOAD
             https://www.lua.org/ftp/${filename}

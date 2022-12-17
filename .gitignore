@@ -34,3 +34,4 @@
 build
 buildl
 lua-*
+compile_commands.json
