@@ -15,6 +15,8 @@ set_property(TARGET lua_objects PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(lua_static STATIC $<TARGET_OBJECTS:lua_objects>)
 add_library(lua_dynamic SHARED $<TARGET_OBJECTS:lua_objects>)
+target_include_directories(lua_dynamic PUBLIC src)
+target_include_directories(lua_static  PUBLIC src)
 
 set(name lua${LUA_VERSION_MAJOR}${LUA_VERSION_MINOR})
 set_target_properties(lua_static PROPERTIES OUTPUT_NAME ${name}s)

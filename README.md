@@ -11,5 +11,5 @@ Inside of your project's CMakeLists.txt
 ```cmake
 add_subdirectory(lua)
 ...
-target_link_libraries(<YOURTARGET> lua_static)
+target_link_libraries(<YOURTARGET> PRIVATE lua_static)
 ```
