@@ -17,10 +17,10 @@ list(GET LUA_VERSION_LIST 1 LUA_VERSION_MINOR)
 list(GET LUA_VERSION_LIST 2 LUA_VERSION_PATCH)
 
 # download lua
-set(temp_dir ${CMAKE_SOURCE_DIR}/lua-${LUA_VERSION})
+set(temp_dir ${CMAKE_CURRENT_SOURCE_DIR}/lua-${LUA_VERSION})
 if(NOT EXISTS lua-${LUA_VERSION})
     set(filename lua-${LUA_VERSION}.tar.gz)
-    set(lua_tgz_path ${CMAKE_SOURCE_DIR}/${filename})
+    set(lua_tgz_path ${CMAKE_CURRENT_SOURCE_DIR}/${filename})
     if(NOT EXISTS ${lua_tgz_path})
         file(DOWNLOAD
             https://www.lua.org/ftp/${filename}
@@ -32,7 +32,7 @@ if(NOT EXISTS lua-${LUA_VERSION})
     endif()
     file(MAKE_DIRECTORY ${temp_dir})
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${lua_tgz_path} 
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     # file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt.subdirectory
     #     DESTINATION ${temp_dir}/CMakeLists.txt)
 endif()
@@ -64,7 +64,7 @@ endif()
 add_subdirectory(lua-${LUA_VERSION})
 # https://blog.xizhibei.me/2020/04/20/cmake-5-install-package-and-export/
 # install dir
-set(install_dir ${CMAKE_SOURCE_DIR}/${CMAKE_C_COMPILER_ID}—lua-${LUA_VERSION}-build-${CMAKE_BUILD_TYPE})
+set(install_dir ${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_C_COMPILER_ID}—lua-${LUA_VERSION}-build-${CMAKE_BUILD_TYPE})
 set(CMAKE_INSTALL_PREFIX ${install_dir}) # default install dir is current_dir/lua-version-build
 
 
