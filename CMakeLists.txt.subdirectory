@@ -14,7 +14,13 @@ add_library(lua_objects OBJECT ${LUA_LIB_SRCS})
 set_property(TARGET lua_objects PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(lua_static STATIC $<TARGET_OBJECTS:lua_objects>)
+set_target_properties(lua_static PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
 add_library(lua_dynamic SHARED $<TARGET_OBJECTS:lua_objects>)
+set_target_properties(lua_dynamic PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
 target_include_directories(lua_dynamic PUBLIC src)
 target_include_directories(lua_static  PUBLIC src)
 
@@ -71,7 +77,8 @@ if(LUA_BUILD_BINARY)
 
 
     add_executable(lua "src/lua.c")
-    target_link_libraries(lua PUBLIC lua_static)
+    #target_link_libraries(lua PUBLIC lua_static)
+    target_link_libraries(lua PUBLIC $<IF:$<BOOL:${LUA_BINARY_LINK_DYNAMIC}>,lua_dynamic,lua_static>)
     set_target_properties(lua PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
     )

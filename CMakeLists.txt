@@ -43,7 +43,6 @@ project(lua LANGUAGES C VERSION ${LUA_VERSION})
 
 option(LUA_SUPPORT_DL "Support dynamic loading of compiled modules" OFF)
 option(LUA_BUILD_AS_CXX "Build lua as C++" OFF)
-# option(LUA_BUILD_DYNAMIC "Build Lib as dynamic lib" ON)
 enable_language(CXX)
 
 if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
@@ -52,13 +51,9 @@ else()
     set(TOP_LEVEL FALSE)
 endif()
 
-if(TOP_LEVEL)
-    option(LUA_BUILD_BINARY "Build lua binary" ON)
-    option(LUA_BUILD_COMPILER "Build luac compiler" ON)
-else()
-    option(LUA_BUILD_BINARY "Build lua binary" OFF)
-    option(LUA_BUILD_COMPILER "Build luac compiler" ON)
-endif()
+option(LUA_BUILD_COMPILER "Build luac compiler" ON)
+option(LUA_BUILD_BINARY "Build lua binary" $<IF:TOP_LEVEL,ON,OFF>)
+option(LUA_BINARY_LINK_DYNAMIC "lua executable link dynamic lua lib" OFF)
 
 
 add_subdirectory(lua-${LUA_VERSION})
